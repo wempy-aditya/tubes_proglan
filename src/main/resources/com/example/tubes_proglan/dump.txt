@@ -265,3 +265,34 @@ public class FileHandler {
         return movies;
     }
 }
+
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.tubes_proglan.MovieSearchController">
+    <VBox alignment="CENTER" spacing="10">
+        <Label text="Pencarian Film" styleClass="title-label" />
+
+        <HBox spacing="10">
+            <TextField fx:id="searchField" promptText="Masukkan judul film" styleClass="search-field" />
+            <Button text="Cari" onAction="#searchButtonClicked" styleClass="search-button" />
+        </HBox>
+
+        <!-- Grid untuk menampilkan hasil pencarian dalam bentuk kartu -->
+        <ScrollPane fitToHeight="true" fitToWidth="true">
+            <GridPane fx:id="resultGrid" styleClass="result-grid" hgap="10" vgap="10" />
+        </ScrollPane>
+
+        <Button text="Bersihkan Hasil" onAction="#clearResults" styleClass="clear-button" />
+        <Button text="Histori" onAction="#showHistory"/>
+
+    </VBox>
+</StackPane>
