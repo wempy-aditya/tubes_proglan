@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.tubes_proglan.MovieSearchController" stylesheets="./styles.css">
+    <VBox alignment="CENTER" spacing="10">
+        <Label text="Pencarian Film" styleClass="title-label" />
+
+        <HBox spacing="10">
+            <TextField fx:id="searchField" promptText="Masukkan judul film" styleClass="search-field" />
+            <Button text="Cari" onAction="#searchButtonClicked" styleClass="search-button" />
+        </HBox>
+
+        <ListView fx:id="resultListView" prefHeight="200" styleClass="result-list" />
+
+        <Button text="Bersihkan Hasil" onAction="#clearResults" styleClass="clear-button" />
+    </VBox>
+</StackPane>
+
+
+package com.example.tubes_proglan;
+
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
+
+public class MovieSearchController {
+    @FXML
+    private TextField searchField;
+
+    @FXML
+    private Button searchButton;
+
+    @FXML
+    private GridPane resultGrid;
+
+    @FXML
+    private void searchButtonClicked() {
+        String searchQuery = searchField.getText().trim();
+        if (!searchQuery.isEmpty()) {
+            // Panggil metode backend untuk mendapatkan hasil pencarian
+            List<String> searchResults = MovieSearchBackend.fetchMoviesFromApi(searchQuery);
+
+            // Hapus semua node dari resultGrid sebelum menambahkan kartu-kartu baru
+            resultGrid.getChildren().clear();
+
+            // Menambahkan setiap hasil pencarian sebagai kartu
+            int column = 0;
+            int row = 0;
+            for (String result : searchResults) {
+                // Ganti dengan logika pembuatan kartu yang sesuai
+                Label card = createCard(result);
+
+                resultGrid.add(card, column, row);
+
+                // Ubah posisi baris dan kolom untuk setiap kartu
+                column++;
+                if (column == 3) {
+                    column = 0;
+                    row++;
+                }
+            }
+        }
+    }
+
+    private Label createCard(String result) {
+        // Ganti dengan logika pembuatan kartu yang sesuai
+        Label card = new Label(result);
+        card.getStyleClass().add("result-card");
+        return card;
+    }
+
+    @FXML
+    private void clearResults() {
+        // Bersihkan hasil pencarian
+        resultGrid.getChildren().clear();
+    }
+}
+
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
+
+import java.util.List;
+
+public class MovieSearchController {
+    @FXML
+    private TextField searchField;
+
+    @FXML
+    private Button searchButton;
+
+    @FXML
+    private ListView<String> resultListView;
+
+    public void initialize() {
+        // Metode yang dipanggil saat antarmuka pengguna diinisialisasi
+        // Anda dapat menambahkan logika inisialisasi di sini jika diperlukan
+    }
+
+    @FXML
+    private void searchButtonClicked() {
+        String searchQuery = searchField.getText().trim();
+        if (!searchQuery.isEmpty()) {
+            // Panggil metode backend untuk mendapatkan hasil pencarian
+            List<String> searchResults = MovieSearchBackend.fetchMoviesFromApi(searchQuery);
+
+            // Tampilkan hasil pencarian di ListView
+            resultListView.getItems().setAll(searchResults);
+        }
+    }
+
+    @FXML
+    private void clearResults() {
+        // Bersihkan hasil pencarian
+        resultListView.getItems().clear();
+    }
+}
+
+package com.example.tubes_proglan;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+public class MovieSearchBackend {
+    private static final String API_KEY = "048769c304ad53e89d72b3dbfc09371a"; // Ganti dengan kunci API TMDb Anda
+
+    public static List<String> fetchMoviesFromApi(String title) {
+        List<String> results = new ArrayList<>();
+
+        try {
+            // Ganti URL dengan endpoint pencarian film TMDb
+            String apiUrl = "https://api.themoviedb.org/3/search/movie";
+            String apiKeyParam = "?api_key=" + API_KEY;
+            String queryParam = "&query=" + title;
+
+            // Membuat URL untuk pencarian film
+            URL url = new URL(apiUrl + apiKeyParam + queryParam);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+            // Set metode HTTP yang diinginkan (GET)
+            connection.setRequestMethod("GET");
+
+            // Baca respons dari API
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            StringBuilder response = new StringBuilder();
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+
+            reader.close();
+
+            // Proses respons JSON menggunakan pustaka Gson
+            JsonParser parser = new JsonParser();
+            JsonObject jsonResponse = parser.parse(response.toString()).getAsJsonObject();
+
+            // Dapatkan array hasil pencarian film dari respons JSON
+            JsonArray resultsArray = jsonResponse.getAsJsonArray("results");
+
+            // Ambil judul film dari setiap objek hasil pencarian
+            for (int i = 0; i < resultsArray.size(); i++) {
+                JsonObject movieObject = resultsArray.get(i).getAsJsonObject();
+                String movieTitle = movieObject.get("title").getAsString();
+                results.add(movieTitle);
+            }
+
+            // Tutup koneksi
+            connection.disconnect();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Handle kesalahan koneksi atau pemrosesan respons di sini
+        }
+
+        return results;
+    }
+}
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"  fx:controller="com.example.tubes_proglan.MovieSearchController">
+    <VBox alignment="CENTER" spacing="10">
+        <Label text="Pencarian Film" styleClass="title-label" />
+
+        <HBox spacing="10">
+            <TextField fx:id="searchField" promptText="Masukkan judul film" styleClass="search-field" />
+            <Button text="Cari" onAction="#searchButtonClicked" styleClass="search-button" />
+        </HBox>
+
+        <!-- Grid untuk menampilkan hasil pencarian dalam bentuk kartu -->
+        <GridPane fx:id="resultGrid" styleClass="result-grid" hgap="10" vgap="10" />
+
+        <Button text="Bersihkan Hasil" onAction="#clearResults" styleClass="clear-button" />
+    </VBox>
+</StackPane>
+
+
+package com.example.tubes_proglan;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class FileHandler {
+    public static void saveToFile(List<Movie> movies, String fileName) {
+        try (FileWriter writer = new FileWriter(fileName)) {
+            for (Movie movie : movies) {
+                writer.write(movie.getTitle() + "," + movie.getImageUrl() + "\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Handle kesalahan penyimpanan ke file di sini
+        }
+    }
+
+    public static List<Movie> readFromFile(String fileName) {
+        List<Movie> movies = new ArrayList<>();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length == 2) {
+                    String title = parts[0];
+                    String imageUrl = parts[1];
+                    movies.add(new Movie(title, imageUrl));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Handle kesalahan membaca dari file di sini
+        }
+
+        return movies;
+    }
+}
